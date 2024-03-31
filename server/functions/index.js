@@ -66,6 +66,7 @@ exports.StripePayEndpointMethodId = functions.https.onRequest(async (req, res) =
                 currency,
                 payment_method: paymentMethodId,
                 use_stripe_sdk: useStripeSdk,
+                return_url: 'https://example.com/return_url',
             };
             const intent = await stripe.paymentIntents.create(params);
             // After create, if the PaymentIntent's status is succeeded, fulfill the order.

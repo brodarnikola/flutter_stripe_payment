@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:developer' as important_logs;
 
 import 'package:http/http.dart' as http;
 import 'package:equatable/equatable.dart';
@@ -28,24 +30,30 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   ) async {
     emit(state.copyWith(status: PaymentStatus.loading));
 
+    important_logs.log('data: $state');
     final paymentMethod = await Stripe.instance.createPaymentMethod(
-      params: PaymentMethodParams.card(paymentMethodData: PaymentMethodData(
-          billingDetails: event.billingDetails,
-        ))
-      /* PaymentMethodParams.card(
+        params: PaymentMethodParams.card(
+            paymentMethodData: PaymentMethodData(
+      billingDetails: event.billingDetails,
+    ))
+        /* PaymentMethodParams.card(
         paymentMethodData: PaymentMethodData(
           billingDetails: event.billingDetails,
         ),
       ), */
-    );
+        );
+
+    important_logs.log("payment paymentMethod is 1: $paymentMethod");
 
     final paymentIntentResult = await _callPayEndpointMethodId(
       useStripeSdk: true,
       paymentMethodId: paymentMethod.id,
-      currency: 'usd',
+      currency: 'eur',
       items: event.items,
     );
 
+    important_logs
+        .log("payment paymentIntentResult is 1: $paymentIntentResult");
     if (paymentIntentResult['error'] != null) {
       // Error creating or confirming the payment intent.
       emit(state.copyWith(status: PaymentStatus.failure));
@@ -61,7 +69,9 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         paymentIntentResult['requiresAction'] == true) {
       final String clientSecret = paymentIntentResult['clientSecret'];
       add(PaymentConfirmIntent(clientSecret: clientSecret));
-    } else {}
+    } else {
+      important_logs.log("payment clientSecret is 1: $paymentIntentResult");
+    }
   }
 
   void _onPaymentConfirmIntent(
@@ -97,8 +107,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     List<Map<String, dynamic>>? items,
   }) async {
     final url = Uri.parse(
-      'https://us-central1-flutter-stripe-tutorial-2fdd3.cloudfunctions.net/StripePayEndpointMethodId',
-    );
+        'https://us-central1-flutter-stripe-tutorial-2fdd3.cloudfunctions.net/StripePayEndpointMethodId');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -109,6 +118,8 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         'items': items
       }),
     );
+
+    important_logs.log("payment response.body is 1: ${response.body}");
     return json.decode(response.body);
   }
 
@@ -116,8 +127,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     required String paymentIntentId,
   }) async {
     final url = Uri.parse(
-      'https://us-central1-flutter-stripe-tutorial-2fdd3.cloudfunctions.net/StripePayEndpointIntentId',
-    );
+        'https://us-central1-flutter-stripe-tutorial-2fdd3.cloudfunctions.net/StripePayEndpointIntentId');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

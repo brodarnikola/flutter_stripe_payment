@@ -41,13 +41,9 @@ class CardFormScreen extends StatelessWidget {
                           ? context.read<PaymentBloc>().add(
                                 const PaymentCreateIntent(
                                   billingDetails: BillingDetails(
-                                    email: 'massimo@maxonflutter.com',
+                                    email: 'brodarnikola9@gmail.com',
                                   ),
-                                  items: [
-                                    {'id': '0'},
-                                    {'id': '1'},
-                                    {'id': '1'},
-                                    {'id': '1'},
+                                  items: [ 
                                     {'id': '1'},
                                     {'id': '2'},
                                   ],
