@@ -62,11 +62,15 @@ exports.StripePayEndpointMethodId = functions.https.onRequest(async (req, res) =
             const params = {
                 amount: orderAmount,
                 confirm: true,
-                confirmation_method: 'manual',
+                // confirmation_method: 'manual',
                 currency,
                 payment_method: paymentMethodId,
                 use_stripe_sdk: useStripeSdk,
-                return_url: 'https://example.com/return_url',
+                automatic_payment_methods: {
+                    enabled: true,
+                    allow_redirects: 'never',
+                },
+                // return_url: 'https://example.com/return_url',
             };
             const intent = await stripe.paymentIntents.create(params);
             // After create, if the PaymentIntent's status is succeeded, fulfill the order.
